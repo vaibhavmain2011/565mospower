@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MosPower565 — Official Website</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: #0f0f0f;
+      color: #ffffff;
+    }
+
+    header {
+      background: linear-gradient(135deg, #1e1e1e, #2d6aff);
+      padding: 40px 20px;
+      text-align: center;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 2.5rem;
+    }
+
+    header p {
+      margin-top: 8px;
+      opacity: 0.85;
+    }
+
+    .container {
+      width: 90%;
+      max-width: 1000px;
+      margin: 30px auto;
+    }
+
+    .card {
+      background: #161616;
+      padding: 20px;
+      border-radius: 14px;
+      margin-bottom: 25px;
+      border: 1px solid #2a2a2a;
+    }
+
+    .card h2 {
+      margin-top: 0;
+      margin-bottom: 12px;
+    }
+
+    a.button, button.button {
+      display: inline-block;
+      margin-top: 10px;
+      padding: 10px 16px;
+      border-radius: 10px;
+      text-decoration: none;
+      background: #2d6aff;
+      color: #ffffff;
+      font-weight: bold;
+      border: none;
+      cursor: pointer;
+    }
+
+    .grid {
+      display: grid;
+      gap: 15px;
+    }
+
+    @media(min-width: 650px){
+      .grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    footer {
+      text-align: center;
+      padding: 20px 0 35px;
+      opacity: .7;
+    }
+  </style>
+
+  <script>
+    function notReleased() {
+      alert("⛔ This texture pack is not released yet. Stay tuned!");
+    }
+  </script>
+</head>
+
+<body>
+
+<header>
+  <h1>MosPower565</h1>
+  <p>Minecraft YouTuber • Texture Packs • Community & Projects</p>
+</header>
+
+<div class="container">
+
+  <!-- About -->
+  <div class="card">
+    <h2>About Me</h2>
+    <p>
+      Hey! I'm <b>MosPower565</b>, a Minecraft YouTuber who loves creating gameplay videos,
+      PvP content, and fun Minecraft experiments. This website is where I share
+      my texture packs, community links, and channel resources.
+    </p>
+  </div>
+
+  <!-- Discord -->
+  <div class="card">
+    <h2>Join My Discord</h2>
+    <p>Hang out with the community, chat, and get updates on new videos!</p>
+    <a class="button" href="https://discord.gg/rGDcFpEC4g" target="_blank">
+      Join Discord
+    </a>
+  </div>
+
+  <!-- Texture Packs -->
+  <div class="card">
+    <h2>My Texture Packs</h2>
+    <p>These texture packs are coming soon!</p>
+
+    <div class="grid">
+      <div>
+        <p><b>MosPower PvP Pack</b></p>
+        <button class="button" onclick="notReleased()">Not Released Yet</button>
+      </div>
+
+      <div>
+        <p><b>FPS Boost Pack</b></p>
+        <button class="button" onclick="notReleased()">Not Released Yet</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Videos -->
+  <div class="card">
+    <h2>Recent Videos</h2>
+    <p>Latest uploads from my YouTube channel</p>
+
+    <div id="videos" class="grid"></div>
+  </div>
+
+  <script>
+    // 🔹 Replace with your channel ID
+    const channelId = "UCV5It-khV2ahcyYktF4cC-g";
+
+    const feedUrl =
+      `https://www.youtube.com/feeds/videos.xml?channel_id=${channelId}`;
+
+    fetch(feedUrl)
+      .then(res => res.text())
+      .then(str => (new window.DOMParser()).parseFromString(str, "text/xml"))
+      .then(data => {
+        const items = data.getElementsByTagName("entry");
+        const container = document.getElementById("videos");
+
+        for (let i = 0; i < Math.min(4, items.length); i++) {
+          const title = items[i].getElementsByTagName("title")[0].textContent;
+          const link = items[i].getElementsByTagName("link")[0].getAttribute("href");
+          const videoId = link.split("v=")[1];
+          const thumbnail = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
+
+          const card = document.createElement("div");
+          card.innerHTML = `
+            <a href="${link}" target="_blank" style="text-decoration:none; color:white">
+              <img src="${thumbnail}" style="width:100%; border-radius:10px;">
+              <p style="margin-top:6px; font-weight:bold;">${title}</p>
+            </a>
+          `;
+          container.appendChild(card);
+        }
+      })
+      .catch(() => {
+        document.getElementById("videos").innerHTML =
+          "<p>Could not load videos right now.</p>";
+      });
+  </script>
+
+  <!-- YouTube -->
+  <div class="card">
+    <h2>YouTube Channel</h2>
+    <p>Watch my latest Minecraft videos and support the channel!</p>
+    <a class="button" href="https://youtube.com/@MosPower565" target="_blank">
+      Visit Channel
+    </a>
+  </div>
+
+  <!-- Contact -->
+  <div class="card">
+    <h2>Contact / Business</h2>
+    <p>Email me for collaborations or business inquiries:</p>
+    <p><b>nikhilkr044@gmail.com</b></p>
+  </div>
+
+</div>
+
+<footer>
+  © 2026 MosPower565 — All Rights Reserved
+</footer>
+
+</body>
+</html>
