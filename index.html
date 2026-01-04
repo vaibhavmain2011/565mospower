@@ -19,15 +19,8 @@
       text-align: center;
     }
 
-    header h1 {
-      margin: 0;
-      font-size: 2.5rem;
-    }
-
-    header p {
-      margin-top: 8px;
-      opacity: 0.85;
-    }
+    header h1 { margin: 0; font-size: 2.5rem; }
+    header p { margin-top: 8px; opacity: 0.85; }
 
     .container {
       width: 90%;
@@ -43,10 +36,7 @@
       border: 1px solid #2a2a2a;
     }
 
-    .card h2 {
-      margin-top: 0;
-      margin-bottom: 12px;
-    }
+    .card h2 { margin-top: 0; margin-bottom: 12px; }
 
     a.button, button.button {
       display: inline-block;
@@ -61,22 +51,10 @@
       cursor: pointer;
     }
 
-    .grid {
-      display: grid;
-      gap: 15px;
-    }
+    .grid { display: grid; gap: 15px; }
+    @media (min-width: 650px) { .grid { grid-template-columns: 1fr 1fr; } }
 
-    @media(min-width: 650px){
-      .grid {
-        grid-template-columns: 1fr 1fr;
-      }
-    }
-
-    footer {
-      text-align: center;
-      padding: 20px 0 35px;
-      opacity: .7;
-    }
+    footer { text-align: center; padding: 20px 0 35px; opacity: .7; }
   </style>
 
   <script>
@@ -95,29 +73,26 @@
 
 <div class="container">
 
-  <!-- About -->
   <div class="card">
     <h2>About Me</h2>
     <p>
-      Hey! I'm <b>MosPower565</b>, a Minecraft YouTuber who loves creating gameplay videos,
-      PvP content, and fun Minecraft experiments. This website is where I share
-      my texture packs, community links, and channel resources.
+      Hey! I'm <b>MosPower565</b>, a Minecraft YouTuber who loves gameplay,
+      PvP and fun experiments. This website shares my texture packs,
+      community links, and channel resources.
     </p>
   </div>
 
-  <!-- Discord -->
   <div class="card">
     <h2>Join My Discord</h2>
-    <p>Hang out with the community, chat, and get updates on new videos!</p>
+    <p>Hang out with the community and get video updates!</p>
     <a class="button" href="https://discord.gg/rGDcFpEC4g" target="_blank">
       Join Discord
     </a>
   </div>
 
-  <!-- Texture Packs -->
   <div class="card">
     <h2>My Texture Packs</h2>
-    <p>These texture packs are coming soon!</p>
+    <p>These packs are coming soon!</p>
 
     <div class="grid">
       <div>
@@ -132,58 +107,68 @@
     </div>
   </div>
 
-  <!-- Recent Videos -->
   <div class="card">
     <h2>Recent Videos</h2>
-    <p>Latest uploads from my YouTube channel</p>
+    <p>Latest uploads from my YouTube channel (no Shorts)</p>
 
     <div id="videos" class="grid"></div>
   </div>
 
- <script>
-  const channelId = "UCV5It-khV2ahcyYktF4cC-g";
+  <!-- ⭐ Shows ONLY 2 latest normal videos (skips Shorts) -->
+  <script>
+    const channelId = "UCV5It-khV2ahcyYktF4cC-g";
 
-  // GitHub-safe proxy for YouTube RSS
-  const feedUrl =
-    "https://cors.isomorphic-git.org/https://www.youtube.com/feeds/videos.xml?channel_id=" +
-    channelId;
+    const feedUrl =
+      "https://api.allorigins.win/raw?url=" +
+      encodeURIComponent(
+        "https://www.youtube.com/feeds/videos.xml?channel_id=" + channelId
+      );
 
-  fetch(feedUrl)
-    .then(res => res.text())
-    .then(str => (new DOMParser()).parseFromString(str, "text/xml"))
-    .then(data => {
-      const container = document.getElementById("videos");
-      const entries = data.getElementsByTagName("entry");
+    fetch(feedUrl)
+      .then(res => res.text())
+      .then(str => new DOMParser().parseFromString(str, "text/xml"))
+      .then(data => {
+        const container = document.getElementById("videos");
+        const entries = Array.from(data.getElementsByTagName("entry"));
 
-      if (!entries.length) {
-        container.innerHTML = "<p>No videos found.</p>";
-        return;
-      }
+        let shown = 0;
 
-      for (let i = 0; i < Math.min(4, entries.length); i++) {
-        const title = entries[i].getElementsByTagName("title")[0].textContent;
-        const link = entries[i].getElementsByTagName("link")[0].getAttribute("href");
-        const videoId = link.split("v=")[1];
-        const thumbnail = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
+        for (const entry of entries) {
+          if (shown >= 2) break; // show only 2 videos
 
-        const div = document.createElement("div");
-        div.innerHTML = `
-          <a href="${link}" target="_blank" style="text-decoration:none; color:white">
-            <img src="${thumbnail}" style="width:100%; border-radius:10px;">
-            <p style="margin-top:6px; font-weight:bold;">${title}</p>
-          </a>
-        `;
-        container.appendChild(div);
-      }
-    })
-    .catch(err => {
-      document.getElementById("videos").innerHTML =
-        "<p>Could not load videos right now.</p>";
-    });
-</script>
+          const durationTag = entry.getElementsByTagName("yt:duration")[0];
+          const duration = durationTag ? parseInt(durationTag.getAttribute("seconds")) : 0;
 
+          // Skip Shorts (usually under 60 seconds)
+          if (duration && duration < 60) continue;
 
-  <!-- YouTube -->
+          const title = entry.getElementsByTagName("title")[0].textContent;
+          const link = entry.getElementsByTagName("link")[0].getAttribute("href");
+          const videoId = link.split("v=")[1];
+          const thumbnail = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
+
+          const div = document.createElement("div");
+          div.innerHTML = `
+            <a href="${link}" target="_blank" style="text-decoration:none; color:white">
+              <img src="${thumbnail}" style="width:100%; border-radius:10px;">
+              <p style="margin-top:6px; font-weight:bold;">${title}</p>
+            </a>
+          `;
+          container.appendChild(div);
+
+          shown++;
+        }
+
+        if (shown === 0) {
+          container.innerHTML = "<p>No regular videos found yet.</p>";
+        }
+      })
+      .catch(() => {
+        document.getElementById("videos").innerHTML =
+          "<p>Could not load videos right now.</p>";
+      });
+  </script>
+
   <div class="card">
     <h2>YouTube Channel</h2>
     <p>Watch my latest Minecraft videos and support the channel!</p>
@@ -192,10 +177,9 @@
     </a>
   </div>
 
-  <!-- Contact -->
   <div class="card">
     <h2>Contact / Business</h2>
-    <p>Email me for collaborations or business inquiries:</p>
+    <p>Email for collaborations and business:</p>
     <p><b>nikhilkr044@gmail.com</b></p>
   </div>
 
@@ -207,4 +191,3 @@
 
 </body>
 </html>
-
