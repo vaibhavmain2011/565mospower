@@ -140,41 +140,48 @@
     <div id="videos" class="grid"></div>
   </div>
 
-  <script>
-    // 🔹 Replace with your channel ID
-    const channelId = "UCV5It-khV2ahcyYktF4cC-g";
+ <script>
+  const channelId = "UCV5It-khV2ahcyYktF4cC-g";
 
-    const feedUrl =
-      `https://www.youtube.com/feeds/videos.xml?channel_id=${channelId}`;
+  // GitHub-safe proxy for YouTube RSS
+  const feedUrl =
+    "https://cors.isomorphic-git.org/https://www.youtube.com/feeds/videos.xml?channel_id=" +
+    channelId;
 
-    fetch(feedUrl)
-      .then(res => res.text())
-      .then(str => (new window.DOMParser()).parseFromString(str, "text/xml"))
-      .then(data => {
-        const items = data.getElementsByTagName("entry");
-        const container = document.getElementById("videos");
+  fetch(feedUrl)
+    .then(res => res.text())
+    .then(str => (new DOMParser()).parseFromString(str, "text/xml"))
+    .then(data => {
+      const container = document.getElementById("videos");
+      const entries = data.getElementsByTagName("entry");
 
-        for (let i = 0; i < Math.min(4, items.length); i++) {
-          const title = items[i].getElementsByTagName("title")[0].textContent;
-          const link = items[i].getElementsByTagName("link")[0].getAttribute("href");
-          const videoId = link.split("v=")[1];
-          const thumbnail = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
+      if (!entries.length) {
+        container.innerHTML = "<p>No videos found.</p>";
+        return;
+      }
 
-          const card = document.createElement("div");
-          card.innerHTML = `
-            <a href="${link}" target="_blank" style="text-decoration:none; color:white">
-              <img src="${thumbnail}" style="width:100%; border-radius:10px;">
-              <p style="margin-top:6px; font-weight:bold;">${title}</p>
-            </a>
-          `;
-          container.appendChild(card);
-        }
-      })
-      .catch(() => {
-        document.getElementById("videos").innerHTML =
-          "<p>Could not load videos right now.</p>";
-      });
-  </script>
+      for (let i = 0; i < Math.min(4, entries.length); i++) {
+        const title = entries[i].getElementsByTagName("title")[0].textContent;
+        const link = entries[i].getElementsByTagName("link")[0].getAttribute("href");
+        const videoId = link.split("v=")[1];
+        const thumbnail = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
+
+        const div = document.createElement("div");
+        div.innerHTML = `
+          <a href="${link}" target="_blank" style="text-decoration:none; color:white">
+            <img src="${thumbnail}" style="width:100%; border-radius:10px;">
+            <p style="margin-top:6px; font-weight:bold;">${title}</p>
+          </a>
+        `;
+        container.appendChild(div);
+      }
+    })
+    .catch(err => {
+      document.getElementById("videos").innerHTML =
+        "<p>Could not load videos right now.</p>";
+    });
+</script>
+
 
   <!-- YouTube -->
   <div class="card">
@@ -200,3 +207,4 @@
 
 </body>
 </html>
+
